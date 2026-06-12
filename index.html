@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adriana Gonçalves Advocacia — Gestão Financeira</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E2C070;
+      --gold-dim: #8A6E2F;
+      --black: #0A0A0A;
+      --surface: #111111;
+      --surface2: #1A1A1A;
+      --surface3: #222222;
+      --border: #2A2A2A;
+      --border-gold: rgba(201,168,76,0.25);
+      --text: #F0EAD6;
+      --text-muted: #888880;
+      --red: #C0392B;
+      --red-bg: rgba(192,57,43,0.12);
+      --green: #27AE60;
+      --green-bg: rgba(39,174,96,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border-gold);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .logo-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s ease;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--black);
+    }
+    .btn-gold:hover { background: var(--gold-light); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--border-gold);
+    }
+    .btn-outline:hover { border-color: var(--gold); background: rgba(201,168,76,0.07); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: #444; }
+
+    .btn-danger {
+      background: var(--red-bg);
+      color: #E74C3C;
+      border: 1px solid rgba(192,57,43,0.3);
+    }
+    .btn-danger:hover { background: rgba(192,57,43,0.22); }
+
+    .btn-whatsapp {
+      background: rgba(37,211,102,0.12);
+      color: #25D366;
+      border: 1px solid rgba(37,211,102,0.25);
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .btn-whatsapp:hover { background: rgba(37,211,102,0.22); }
+
+    /* MAIN */
+    main { padding: 32px 40px; max-width: 1280px; margin: 0 auto; }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--gold);
+      opacity: 0.4;
+    }
+
+    .stat-card.alert::before { background: var(--red); opacity: 0.8; }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-card.alert .stat-value { color: #E74C3C; }
+
+    .stat-icon {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.1;
+      color: var(--gold);
+    }
+
+    /* SECTION HEADER */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.03em;
+    }
+
+    .search-filter {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 14px 8px 36px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      width: 220px;
+      position: relative;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border-gold);
+    }
+
+    th {
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr.overdue { background: var(--red-bg); }
+    tr.overdue td { color: #F5A8A0; }
+    tr.overdue td.client-name { color: #FF6B6B; font-weight: 500; }
+
+    tr:not(.overdue):hover td { background: rgba(201,168,76,0.03); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .badge-overdue {
+      background: rgba(192,57,43,0.18);
+      color: #E74C3C;
+      border: 1px solid rgba(192,57,43,0.3);
+    }
+
+    .badge-ok {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(39,174,96,0.2);
+    }
+
+    .badge-pending {
+      background: rgba(201,168,76,0.1);
+      color: var(--gold);
+      border: 1px solid var(--border-gold);
+    }
+
+    .progress-bar {
+      width: 80px;
+      height: 4px;
+      background: var(--surface3);
+      border-radius: 2px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-fill.full { background: var(--green); }
+    .progress-fill.overdue { background: var(--red); }
+
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover { color: var(--gold); border-color: var(--border-gold); background: rgba(201,168,76,0.07); }
+    .icon-btn.danger:hover { color: #E74C3C; border-color: rgba(192,57,43,0.4); background: var(--red-bg); }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: 8px;
+      width: 520px;
+      max-width: 95vw;
+      padding: 32px;
+      position: relative;
+    }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    input, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+    }
+
+    input::placeholder { color: var(--text-muted); }
+
+    select option { background: var(--surface2); color: var(--text); }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border-gold);
+      border-radius: 6px;
+      padding: 14px 20px;
+      font-size: 13px;
+      color: var(--text);
+      z-index: 500;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 320px;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(39,174,96,0.4); }
+    .toast.error { border-color: rgba(192,57,43,0.4); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state svg { margin-bottom: 16px; opacity: 0.3; }
+    .empty-state p { font-size: 14px; }
+
+    /* FILTER TABS */
+    .filter-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px;
+    }
+
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .filter-tab.active {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .filter-tab:not(.active):hover { color: var(--text); }
+
+    /* LOADING */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      main { padding: 20px 16px; }
+      header { padding: 16px 20px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-name">Adriana Gonçalves</span>
+    <span class="logo-sub">Advocacia Criminalista &mdash; Gestão Financeira</span>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-gold" onclick="openModal()">
+      <i data-lucide="plus" width="14" height="14"></i>
+      Novo Honorário
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- STATS -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-label">Total a Receber</div>
+      <div class="stat-value" id="statTotal">R$ —</div>
+      <div class="stat-icon"><i data-lucide="landmark" width="48" height="48"></i></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Recebido</div>
+      <div class="stat-value" id="statRecebido">R$ —</div>
+      <div class="stat-icon"><i data-lucide="check-circle" width="48" height="48"></i></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pendente</div>
+      <div class="stat-value" id="statPendente">R$ —</div>
+      <div class="stat-icon"><i data-lucide="clock" width="48" height="48"></i></div>
+    </div>
+    <div class="stat-card alert">
+      <div class="stat-label">Em Atraso</div>
+      <div class="stat-value" id="statAtraso">0</div>
+      <div class="stat-icon"><i data-lucide="alert-triangle" width="48" height="48"></i></div>
+    </div>
+  </div>
+
+  <!-- TABLE SECTION -->
+  <div class="section-header">
+    <span class="section-title">Honorários</span>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="setFilter('todos', this)">Todos</button>
+        <button class="filter-tab" onclick="setFilter('atraso', this)">Em Atraso</button>
+        <button class="filter-tab" onclick="setFilter('pendente', this)">Pendentes</button>
+        <button class="filter-tab" onclick="setFilter('quitado', this)">Quitados</button>
+      </div>
+      <div class="search-wrap">
+        <i data-lucide="search" width="14" height="14"></i>
+        <input type="text" class="search-input" placeholder="Buscar cliente..." id="searchInput" oninput="renderTable()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Data Contrato</th>
+          <th>Vencimento</th>
+          <th>Valor Total</th>
+          <th>Parcela</th>
+          <th>Parcelas</th>
+          <th>Falta Pagar</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="9"><div class="loading">Carregando...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- MODAL NOVO / EDITAR -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">
+      <i data-lucide="x" width="18" height="18"></i>
+    </button>
+    <div class="modal-title" id="modalTitle">Novo Honorário</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Nome do Cliente</label>
+        <input type="text" id="fCliente" placeholder="Ex: João da Silva" />
+      </div>
+      <div class="form-group">
+        <label>Telefone (WhatsApp)</label>
+        <input type="text" id="fTelefone" placeholder="(16) 99999-9999" />
+      </div>
+      <div class="form-group">
+        <label>Data do Contrato</label>
+        <input type="date" id="fDataContrato" />
+      </div>
+      <div class="form-group">
+        <label>Vencimento</label>
+        <input type="date" id="fVencimento" />
+      </div>
+      <div class="form-group">
+        <label>Valor Total (R$)</label>
+        <input type="number" id="fValorTotal" placeholder="0,00" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Valor da Parcela (R$)</label>
+        <input type="number" id="fValorParcela" placeholder="0,00" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Parcelas Pagas</label>
+        <input type="number" id="fParcelasPagas" placeholder="0" min="0" value="0" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="salvar()">
+        <i data-lucide="save" width="14" height="14"></i>
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i data-lucide="check-circle" width="16" height="16"></i>
+  <span id="toastMsg">Salvo com sucesso.</span>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hnwhzxwqqnpkaddestkh.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_TWEN9i5g-k6cIql5Kw9E6g_wTdIeI57';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let registros = [];
+  let filtroAtivo = 'todos';
+  let editId = null;
+
+  // INIT
+  window.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    carregarDados();
+  });
+
+  async function carregarDados() {
+    const { data, error } = await db.from('honorarios').select('*').order('created_at', { ascending: false });
+    if (error) { showToast('Erro ao carregar dados.', 'error'); return; }
+    registros = data || [];
+    renderStats();
+    renderTable();
+  }
+
+  function fmtMoeda(v) {
+    return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtData(d) {
+    if (!d) return '—';
+    const [y, m, dia] = d.split('-');
+    return `${dia}/${m}/${y}`;
+  }
+
+  function isOverdue(row) {
+    if (!row.vencimento) return false;
+    const falta = calcFalta(row);
+    if (falta <= 0) return false;
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const venc = new Date(row.vencimento + 'T00:00:00');
+    return venc < hoje;
+  }
+
+  function isQuitado(row) {
+    return calcFalta(row) <= 0;
+  }
+
+  function calcFalta(row) {
+    const parcelas = Math.round(row.valor_total / row.valor_parcela);
+    const restantes = parcelas - (row.parcelas_pagas || 0);
+    return Math.max(0, restantes * row.valor_parcela);
+  }
+
+  function calcRecebido(row) {
+    return (row.parcelas_pagas || 0) * row.valor_parcela;
+  }
+
+  function totalParcelas(row) {
+    return Math.round(row.valor_total / row.valor_parcela);
+  }
+
+  function renderStats() {
+    let total = 0, recebido = 0, pendente = 0, atraso = 0;
+    registros.forEach(r => {
+      total += Number(r.valor_total);
+      recebido += calcRecebido(r);
+      pendente += calcFalta(r);
+      if (isOverdue(r)) atraso++;
+    });
+    document.getElementById('statTotal').textContent = fmtMoeda(total);
+    document.getElementById('statRecebido').textContent = fmtMoeda(recebido);
+    document.getElementById('statPendente').textContent = fmtMoeda(pendente);
+    document.getElementById('statAtraso').textContent = atraso + ' cliente' + (atraso !== 1 ? 's' : '');
+  }
+
+  function setFilter(f, el) {
+    filtroAtivo = f;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderTable();
+  }
+
+  function renderTable() {
+    const search = (document.getElementById('searchInput').value || '').toLowerCase();
+    let dados = registros.filter(r => {
+      if (search && !r.cliente.toLowerCase().includes(search)) return false;
+      if (filtroAtivo === 'atraso') return isOverdue(r);
+      if (filtroAtivo === 'quitado') return isQuitado(r);
+      if (filtroAtivo === 'pendente') return !isQuitado(r) && !isOverdue(r);
+      return true;
+    });
+
+    const tbody = document.getElementById('tableBody');
+
+    if (dados.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p>Nenhum registro encontrado.</p></div></td></tr>`;
+      lucide.createIcons();
+      return;
+    }
+
+    tbody.innerHTML = dados.map(r => {
+      const falta = calcFalta(r);
+      const recebido = calcRecebido(r);
+      const totalP = totalParcelas(r);
+      const pago = r.parcelas_pagas || 0;
+      const pct = Math.round((pago / totalP) * 100);
+      const overdue = isOverdue(r);
+      const quitado = isQuitado(r);
+      const fillClass = quitado ? 'full' : overdue ? 'overdue' : '';
+
+      let badgeHtml = '';
+      if (quitado) {
+        badgeHtml = `<span class="badge badge-ok"><i data-lucide="check" width="10" height="10"></i> Quitado</span>`;
+      } else if (overdue) {
+        badgeHtml = `<span class="badge badge-overdue"><i data-lucide="alert-circle" width="10" height="10"></i> Atrasado</span>`;
+      } else {
+        badgeHtml = `<span class="badge badge-pending"><i data-lucide="clock" width="10" height="10"></i> Pendente</span>`;
+      }
+
+      const wppNum = (r.telefone || '').replace(/\D/g, '');
+      const wppMsg = encodeURIComponent(`Olá ${r.cliente}, passando para lembrar sobre o pagamento do honorário referente ao contrato de ${fmtData(r.data_contrato)}. O valor em aberto é de ${fmtMoeda(falta)}. Qualquer dúvida, estou à disposição. — Adriana Gonçalves Advocacia`);
+      const wppLink = `https://wa.me/55${wppNum}?text=${wppMsg}`;
+
+      return `<tr class="${overdue ? 'overdue' : ''}">
+        <td class="client-name" style="font-weight:500">${r.cliente}</td>
+        <td>${fmtData(r.data_contrato)}</td>
+        <td>${fmtData(r.vencimento)}</td>
+        <td>${fmtMoeda(r.valor_total)}</td>
+        <td>${fmtMoeda(r.valor_parcela)}</td>
+        <td>
+          <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;color:var(--text-muted)">${pago}/${totalP}</span>
+        </td>
+        <td style="font-weight:500;color:${quitado ? 'var(--green)' : overdue ? '#E74C3C' : 'var(--gold)'}">${quitado ? '—' : fmtMoeda(falta)}</td>
+        <td>${badgeHtml}</td>
+        <td>
+          <div class="actions-cell">
+            ${!quitado ? `<a href="${wppLink}" target="_blank" class="btn btn-whatsapp">
+              <i data-lucide="message-circle" width="13" height="13"></i> Cobrar
+            </a>` : ''}
+            <button class="icon-btn" onclick="editarParcelas('${r.id}', ${pago}, ${totalP})" title="Registrar pagamento">
+              <i data-lucide="plus-circle" width="14" height="14"></i>
+            </button>
+            <button class="icon-btn" onclick="editarRegistro('${r.id}')" title="Editar">
+              <i data-lucide="pencil" width="14" height="14"></i>
+            </button>
+            <button class="icon-btn danger" onclick="excluir('${r.id}')" title="Excluir">
+              <i data-lucide="trash-2" width="14" height="14"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    lucide.createIcons();
+  }
+
+  // MODAL
+  function openModal(dados = null) {
+    editId = dados ? dados.id : null;
+    document.getElementById('modalTitle').textContent = dados ? 'Editar Honorário' : 'Novo Honorário';
+    document.getElementById('fCliente').value = dados?.cliente || '';
+    document.getElementById('fTelefone').value = dados?.telefone || '';
+    document.getElementById('fDataContrato').value = dados?.data_contrato || '';
+    document.getElementById('fVencimento').value = dados?.vencimento || '';
+    document.getElementById('fValorTotal').value = dados?.valor_total || '';
+    document.getElementById('fValorParcela').value = dados?.valor_parcela || '';
+    document.getElementById('fParcelasPagas').value = dados?.parcelas_pagas || 0;
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    editId = null;
+  }
+
+  function editarRegistro(id) {
+    const r = registros.find(x => x.id === id);
+    if (r) openModal(r);
+  }
+
+  async function editarParcelas(id, pago, total) {
+    const novo = prompt(`Parcelas pagas (atual: ${pago} de ${total}):`);
+    if (novo === null || novo === '') return;
+    const n = parseInt(novo);
+    if (isNaN(n) || n < 0 || n > total) { showToast('Valor inválido.', 'error'); return; }
+    const { error } = await db.from('honorarios').update({ parcelas_pagas: n }).eq('id', id);
+    if (error) { showToast('Erro ao atualizar.', 'error'); return; }
+    showToast('Parcelas atualizadas!', 'success');
+    carregarDados();
+  }
+
+  async function salvar() {
+    const payload = {
+      cliente: document.getElementById('fCliente').value.trim(),
+      telefone: document.getElementById('fTelefone').value.trim(),
+      data_contrato: document.getElementById('fDataContrato').value,
+      vencimento: document.getElementById('fVencimento').value,
+      valor_total: parseFloat(document.getElementById('fValorTotal').value),
+      valor_parcela: parseFloat(document.getElementById('fValorParcela').value),
+      parcelas_pagas: parseInt(document.getElementById('fParcelasPagas').value) || 0,
+    };
+
+    if (!payload.cliente || !payload.telefone || !payload.data_contrato || !payload.vencimento || !payload.valor_total || !payload.valor_parcela) {
+      showToast('Preencha todos os campos.', 'error'); return;
+    }
+
+    let error;
+    if (editId) {
+      ({ error } = await db.from('honorarios').update(payload).eq('id', editId));
+    } else {
+      ({ error } = await db.from('honorarios').insert(payload));
+    }
+
+    if (error) { showToast('Erro ao salvar.', 'error'); return; }
+    showToast(editId ? 'Registro atualizado!' : 'Honorário cadastrado!', 'success');
+    closeModal();
+    carregarDados();
+  }
+
+  async function excluir(id) {
+    if (!confirm('Excluir este registro?')) return;
+    const { error } = await db.from('honorarios').delete().eq('id', id);
+    if (error) { showToast('Erro ao excluir.', 'error'); return; }
+    showToast('Registro excluído.', 'success');
+    carregarDados();
+  }
+
+  // TOAST
+  function showToast(msg, tipo = 'success') {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.className = 'toast ' + tipo;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ESC fecha modal
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  document.getElementById('modalOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  });
+</script>
+</body>
+</html>
